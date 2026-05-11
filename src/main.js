@@ -125,7 +125,7 @@ function createShapeBox(){
         new THREE.Vector3(boxWidth,boxHeight,0),
     );
 
-    const slots = 4;
+    const slots = 5;
     const slotStep = boxWidth/slots;
 
     points.push(
@@ -137,6 +137,9 @@ function createShapeBox(){
 
         new THREE.Vector3(3*slotStep,3,0),
         new THREE.Vector3(3*slotStep,boxHeight,0),
+
+        new THREE.Vector3(4*slotStep,3,0),
+        new THREE.Vector3(4*slotStep,boxHeight,0),
     );
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -198,6 +201,20 @@ function createPDBox(){
 }
 
 createPDBox();
+
+function addHexagon(centerX, centerY, size) {
+    const points = [];
+    for (let i = 0; i <= 6; i++) {
+        const angle = (i / 6) * Math.PI * 2;
+        points.push(new THREE.Vector3(
+            centerX + Math.cos(angle) * size,
+            centerY + Math.sin(angle) * size,
+            0
+        ));
+    }
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    scene.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color: '#000000' })));
+}
 
 
 
