@@ -1,22 +1,30 @@
 import * as THREE from 'three';
+import { color } from 'three/tsl';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f0f0);
 
-const height = 210;
+const windowWidth = 1500;
+const windowHeight = 1500;
+
+const biggestDimension = Math.max(windowWidth,windowHeight);
+
+const height = 2.1*biggestDimension;
 const width = Math.SQRT2 * height;
 const panelWidth = width * 0.35; // reused from propertybox
 const boxHeight = height * 0.2; // reused from shapebox
 const pdBoxW = width * 0.2; // reused from PDBox
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-camera.position.set(width / 2, height / 2, 150);
+const rightPdBox = pdBoxW + 3;
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
+const cameraDistance = Math.max(width,height)*0.5
+camera.position.set(width / 2, height / 2, cameraDistance);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
 function createDoubleBoundary() {
-    const margin = 5;
+    const margin = width * 0.005;
     const points = [];
 
     const outerPoints = [
@@ -114,9 +122,9 @@ function createPDBox() {
     const boxW = width * 0.2;
     const boxH = height * 0.25;
 
-    const x = 3;
-    const y = height - boxH - 3;
-    const radius = 5;
+    const x = width * 0.01;
+    const y = height - boxH - x;
+    const radius = width * 0.015;
     const material = new THREE.LineBasicMaterial({ color: '#000000' });
 
     const pdBoxShape = new THREE.Shape();
@@ -205,8 +213,8 @@ function createShapeBox() {
     scene.add(shapeBox);
 
     const centerY = startY + (boxHeight - startY) / 2;
-    addHexagon(slotStep * 0.5, centerY, boxHeight / 2 - 4);
-    addStar(slotStep * 1.5, centerY, boxHeight / 2 - 4, (boxHeight / 2 - 4) / 1.75);
+    addHexagon(slotStep * 0.5, centerY, (boxHeight / 2)*0.8);
+    addStar(slotStep * 1.5, centerY, (boxHeight / 2)*0.8, ((boxHeight / 2)*0.8) / 1.75);
     addArrow(slotStep * 2.5, centerY, boxHeight);
     addLeftArrow(slotStep * 3.5, centerY, boxHeight);
     addRightArrow(slotStep * 4.5, centerY, boxHeight);
@@ -316,20 +324,33 @@ function addLeftArrow(centerX, centerY, boxHeight) {
     scene.add(arrow);
 }
 
-function addWindow(centerX = pdBoxW, centerY = boxHeight, windowWidth = 100, windowHeight = 100) {
+function addWindow(windowWidth = 100, windowHeight = 100) {
+
+    const centerX = (pdBoxW)+(width-panelWidth-pdBoxW)/2;
+    const centerY = boxHeight+(height-boxHeight)/2;
 
     const points = [];
 
-    const x = (width - panelWidth) / 2;
-    const y = (height - boxHeight) / 2;
+    // const x = (width - panelWidth) / 2;
+    // const y = (height - boxHeight) / 2;
 
-    const left = centerX + (x - windowWidth / 2);
-    const right = centerX + (x + windowWidth / 2);
+    // const left = centerX + (x - windowWidth / 2);
+    // const right = centerX + (x + windowWidth / 2);
 
-    const bottom = centerY + (y - windowHeight / 2);
-    const top = centerY + (y + windowHeight / 2);
+    // const bottom = centerY + (y - windowHeight / 2);
+    // const top = centerY + (y + windowHeight / 2);
+
+    const left = centerX - ( windowWidth / 2);
+    const right = centerX + (windowWidth / 2);
+
+    const bottom = centerY - ( windowHeight / 2);
+    const top = centerY + ( windowHeight / 2);
+
+    const h1 = Math.max(windowWidth,windowHeight)*0.02;
+    const bw = h1*0.9;
 
     points.push(
+        //Frame
         new THREE.Vector3(left, bottom, 0),
         new THREE.Vector3(left, top, 0),
 
@@ -341,6 +362,44 @@ function addWindow(centerX = pdBoxW, centerY = boxHeight, windowWidth = 100, win
 
         new THREE.Vector3(right, bottom, 0),
         new THREE.Vector3(left, bottom, 0),
+
+        new THREE.Vector3(left+h1, bottom+h1, 0),
+        new THREE.Vector3(left+h1, top-h1, 0),
+
+        new THREE.Vector3(left+h1, top-h1, 0),
+        new THREE.Vector3(right-h1, top-h1, 0),
+
+        new THREE.Vector3(right-h1, top-h1, 0),
+        new THREE.Vector3(right-h1, bottom+h1, 0),
+
+        new THREE.Vector3(right-h1, bottom+h1, 0),
+        new THREE.Vector3(left+h1, bottom+h1, 0),
+
+        //Bead
+        new THREE.Vector3(left+h1+bw, bottom+h1, 0),
+        new THREE.Vector3(left+h1+bw, top-h1, 0),
+
+        new THREE.Vector3(left+h1+bw, top-h1-bw, 0),
+        new THREE.Vector3(right-h1-bw, top-h1-bw, 0),
+
+        new THREE.Vector3(right-h1-bw, top-h1, 0),
+        new THREE.Vector3(right-h1-bw, bottom+h1, 0),
+
+        new THREE.Vector3(right-h1-bw, bottom+h1+bw, 0),
+        new THREE.Vector3(left+h1+bw, bottom+h1+bw, 0),
+
+        //Frame cut 
+        new THREE.Vector3(left, bottom, 0),
+        new THREE.Vector3(left+h1, bottom+h1, 0),
+
+        new THREE.Vector3(left, top, 0),
+        new THREE.Vector3(left+h1, top-h1, 0),
+
+        new THREE.Vector3(right, bottom, 0),
+        new THREE.Vector3(right-h1, bottom+h1, 0),
+
+        new THREE.Vector3(right, top, 0),
+        new THREE.Vector3(right-h1, top-h1, 0)
     );
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -352,8 +411,42 @@ function addWindow(centerX = pdBoxW, centerY = boxHeight, windowWidth = 100, win
     const windowShape = new THREE.LineSegments(geometry, material);
 
     scene.add(windowShape);
+
+    const dashedGeometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(left,centerY-windowWidth*0.01,0), new THREE.Vector3(right,centerY-windowWidth*0.01,0),
+        new THREE.Vector3(centerX-windowHeight*0.01,top,0), new THREE.Vector3(centerX-windowHeight*0.01,bottom,0)
+    ]);
+    const dashedMaterial = new THREE.LineDashedMaterial({color: '#000000', dashSize:Math.max(windowWidth,windowHeight)*0.01, gapSize:Math.max(windowWidth,windowHeight)*0.007});
+
+    scene.add(new THREE.LineSegments(dashedGeometry,dashedMaterial).computeLineDistances());
+
+    const dimOffset = Math.max(windowWidth,windowHeight)*0.08;
+    const tickSize = dimOffset * 0.4;
+
+    const dimY = bottom-dimOffset;
+    const bottomDimPoints = [
+        new THREE.Vector3(left,dimY,0), new THREE.Vector3(right,dimY,0),
+        new THREE.Vector3(left,dimY-tickSize,0), new THREE.Vector3(left,dimY+tickSize,0),
+        new THREE.Vector3(right,dimY-tickSize,0), new THREE.Vector3(right,dimY+tickSize,0)
+    ];
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(bottomDimPoints),new THREE.LineBasicMaterial({color:'#000000'})));
+
+    const dimX = right+dimOffset;
+    const rightDimPoints = [
+        new THREE.Vector3(dimX,top,0), new THREE.Vector3(dimX,bottom,0),
+        new THREE.Vector3(dimX+tickSize,top,0), new THREE.Vector3(dimX-tickSize,top,0),
+        new THREE.Vector3(dimX-tickSize,bottom,0), new THREE.Vector3(dimX+tickSize,bottom,0)
+    ];
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(rightDimPoints),new THREE.LineBasicMaterial({color:'#000000'})));
+
+    const plusSize = Math.min(windowWidth,windowHeight)*0.05;
+    const plusPoints = [
+        new THREE.Vector3(centerX,centerY-plusSize,0), new THREE.Vector3(centerX,centerY+plusSize,0),
+        new THREE.Vector3(centerX-plusSize,centerY,0), new THREE.Vector3(centerX+plusSize,centerY,0)
+    ];
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(plusPoints),new THREE.LineBasicMaterial({color:'#000000'})));
 }
-addWindow();
+addWindow(windowWidth,windowHeight);
 
 window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
