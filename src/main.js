@@ -4,6 +4,7 @@ import { FontLoader } from 'three/examples/jsm/Addons.js';
 import { TTFLoader } from 'three/examples/jsm/Addons.js';
 import { TextGeometry } from 'three/examples/jsm/Addons.js';
 import { color } from 'three/tsl';
+import { MOUSE } from 'three/webgpu';
 
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf0f0f0);
@@ -50,6 +51,10 @@ renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 const controls = new OrbitControls(camera,renderer.domElement);
 controls.target.set(width/2,height/2,0);
+controls.mouseButtons={
+    LEFT: THREE.MOUSE.PAN,
+    RIGHT: THREE.MOUSE.PAN
+}
 // controls.rotation.z = false;
 
 function createDoubleBoundary() {
