@@ -1,4 +1,8 @@
 import * as THREE from 'three';
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
+import { FontLoader } from 'three/examples/jsm/Addons.js';
+import { TTFLoader } from 'three/examples/jsm/Addons.js';
+import { TextGeometry } from 'three/examples/jsm/Addons.js';
 import { color } from 'three/tsl';
 
 const scene = new THREE.Scene();
@@ -7,21 +11,46 @@ scene.background = new THREE.Color(0xf0f0f0);
 const windowWidth = 1500;
 const windowHeight = 1500;
 
-const biggestDimension = Math.max(windowWidth,windowHeight);
+const biggestDimension = Math.max(windowWidth, windowHeight);
 
-const height = 2.1*biggestDimension;
+const height = 2.1 * biggestDimension;
 const width = Math.SQRT2 * height;
 const panelWidth = width * 0.35; // reused from propertybox
 const boxHeight = height * 0.2; // reused from shapebox
 const pdBoxW = width * 0.2; // reused from PDBox
+const pdBoxH = height * 0.25; // reused from PDBox
 const rightPdBox = pdBoxW + 3;
+const margin = width * 0.005;
+
+const centerX = (pdBoxW) + (width - panelWidth - pdBoxW) / 2;
+const centerY = boxHeight + (height - boxHeight) / 2;
+
+const left = centerX - (windowWidth / 2);
+const right = centerX + (windowWidth / 2);
+
+const bottom = centerY - (windowHeight / 2);
+const top = centerY + (windowHeight / 2);
+const dimOffset = Math.max(windowWidth, windowHeight) * 0.08;
+
+const dimX = right + dimOffset;
+const dimY = bottom - dimOffset;
+
+const layout = {
+    panelWidth: width * 0.35,
+    pdBoxW: width * 0.2,
+    pdBoxH: height * 0.25,
+    boxHeight: height * 0.2,
+};
 const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100000);
-const cameraDistance = Math.max(width,height)*0.5
+const cameraDistance = Math.max(width, height) * 0.5
 camera.position.set(width / 2, height / 2, cameraDistance);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
+const controls = new OrbitControls(camera,renderer.domElement);
+controls.target.set(width/2,height/2,0);
+// controls.rotation.z = false;
 
 function createDoubleBoundary() {
     const margin = width * 0.005;
@@ -55,7 +84,7 @@ function createDoubleBoundary() {
 createDoubleBoundary();
 
 function createPropertyBox() {
-    const panelWidth = width * 0.35;
+    const panelWidth = layout.panelWidth;
     const panelX = width - panelWidth;
     const points = [];
     points.push(
@@ -119,8 +148,8 @@ function createPropertyBox() {
 createPropertyBox();
 
 function createPDBox() {
-    const boxW = width * 0.2;
-    const boxH = height * 0.25;
+    const boxW = layout.pdBoxW;
+    const boxH = layout.pdBoxH;
 
     const x = width * 0.01;
     const y = height - boxH - x;
@@ -213,8 +242,8 @@ function createShapeBox() {
     scene.add(shapeBox);
 
     const centerY = startY + (boxHeight - startY) / 2;
-    addHexagon(slotStep * 0.5, centerY, (boxHeight / 2)*0.8);
-    addStar(slotStep * 1.5, centerY, (boxHeight / 2)*0.8, ((boxHeight / 2)*0.8) / 1.75);
+    addHexagon(slotStep * 0.5, centerY, (boxHeight / 2) * 0.8);
+    addStar(slotStep * 1.5, centerY, (boxHeight / 2) * 0.8, ((boxHeight / 2) * 0.8) / 1.75);
     addArrow(slotStep * 2.5, centerY, boxHeight);
     addLeftArrow(slotStep * 3.5, centerY, boxHeight);
     addRightArrow(slotStep * 4.5, centerY, boxHeight);
@@ -326,8 +355,8 @@ function addLeftArrow(centerX, centerY, boxHeight) {
 
 function addWindow(windowWidth = 100, windowHeight = 100) {
 
-    const centerX = (pdBoxW)+(width-panelWidth-pdBoxW)/2;
-    const centerY = boxHeight+(height-boxHeight)/2;
+    const centerX = (pdBoxW) + (width - panelWidth - pdBoxW) / 2;
+    const centerY = boxHeight + (height - boxHeight) / 2;
 
     const points = [];
 
@@ -340,14 +369,14 @@ function addWindow(windowWidth = 100, windowHeight = 100) {
     // const bottom = centerY + (y - windowHeight / 2);
     // const top = centerY + (y + windowHeight / 2);
 
-    const left = centerX - ( windowWidth / 2);
+    const left = centerX - (windowWidth / 2);
     const right = centerX + (windowWidth / 2);
 
-    const bottom = centerY - ( windowHeight / 2);
-    const top = centerY + ( windowHeight / 2);
+    const bottom = centerY - (windowHeight / 2);
+    const top = centerY + (windowHeight / 2);
 
-    const h1 = Math.max(windowWidth,windowHeight)*0.02;
-    const bw = h1*0.9;
+    const h1 = Math.max(windowWidth, windowHeight) * 0.02;
+    const bw = h1 * 0.9;
 
     points.push(
         //Frame
@@ -363,43 +392,43 @@ function addWindow(windowWidth = 100, windowHeight = 100) {
         new THREE.Vector3(right, bottom, 0),
         new THREE.Vector3(left, bottom, 0),
 
-        new THREE.Vector3(left+h1, bottom+h1, 0),
-        new THREE.Vector3(left+h1, top-h1, 0),
+        new THREE.Vector3(left + h1, bottom + h1, 0),
+        new THREE.Vector3(left + h1, top - h1, 0),
 
-        new THREE.Vector3(left+h1, top-h1, 0),
-        new THREE.Vector3(right-h1, top-h1, 0),
+        new THREE.Vector3(left + h1, top - h1, 0),
+        new THREE.Vector3(right - h1, top - h1, 0),
 
-        new THREE.Vector3(right-h1, top-h1, 0),
-        new THREE.Vector3(right-h1, bottom+h1, 0),
+        new THREE.Vector3(right - h1, top - h1, 0),
+        new THREE.Vector3(right - h1, bottom + h1, 0),
 
-        new THREE.Vector3(right-h1, bottom+h1, 0),
-        new THREE.Vector3(left+h1, bottom+h1, 0),
+        new THREE.Vector3(right - h1, bottom + h1, 0),
+        new THREE.Vector3(left + h1, bottom + h1, 0),
 
         //Bead
-        new THREE.Vector3(left+h1+bw, bottom+h1, 0),
-        new THREE.Vector3(left+h1+bw, top-h1, 0),
+        new THREE.Vector3(left + h1 + bw, bottom + h1, 0),
+        new THREE.Vector3(left + h1 + bw, top - h1, 0),
 
-        new THREE.Vector3(left+h1+bw, top-h1-bw, 0),
-        new THREE.Vector3(right-h1-bw, top-h1-bw, 0),
+        new THREE.Vector3(left + h1 + bw, top - h1 - bw, 0),
+        new THREE.Vector3(right - h1 - bw, top - h1 - bw, 0),
 
-        new THREE.Vector3(right-h1-bw, top-h1, 0),
-        new THREE.Vector3(right-h1-bw, bottom+h1, 0),
+        new THREE.Vector3(right - h1 - bw, top - h1, 0),
+        new THREE.Vector3(right - h1 - bw, bottom + h1, 0),
 
-        new THREE.Vector3(right-h1-bw, bottom+h1+bw, 0),
-        new THREE.Vector3(left+h1+bw, bottom+h1+bw, 0),
+        new THREE.Vector3(right - h1 - bw, bottom + h1 + bw, 0),
+        new THREE.Vector3(left + h1 + bw, bottom + h1 + bw, 0),
 
         //Frame cut 
         new THREE.Vector3(left, bottom, 0),
-        new THREE.Vector3(left+h1, bottom+h1, 0),
+        new THREE.Vector3(left + h1, bottom + h1, 0),
 
         new THREE.Vector3(left, top, 0),
-        new THREE.Vector3(left+h1, top-h1, 0),
+        new THREE.Vector3(left + h1, top - h1, 0),
 
         new THREE.Vector3(right, bottom, 0),
-        new THREE.Vector3(right-h1, bottom+h1, 0),
+        new THREE.Vector3(right - h1, bottom + h1, 0),
 
         new THREE.Vector3(right, top, 0),
-        new THREE.Vector3(right-h1, top-h1, 0)
+        new THREE.Vector3(right - h1, top - h1, 0)
     );
 
     const geometry = new THREE.BufferGeometry().setFromPoints(points);
@@ -413,40 +442,145 @@ function addWindow(windowWidth = 100, windowHeight = 100) {
     scene.add(windowShape);
 
     const dashedGeometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(left,centerY-windowWidth*0.01,0), new THREE.Vector3(right,centerY-windowWidth*0.01,0),
-        new THREE.Vector3(centerX-windowHeight*0.01,top,0), new THREE.Vector3(centerX-windowHeight*0.01,bottom,0)
+        new THREE.Vector3(left, centerY - windowWidth * 0.01, 0), new THREE.Vector3(right, centerY - windowWidth * 0.01, 0),
+        new THREE.Vector3(centerX - windowHeight * 0.01, top, 0), new THREE.Vector3(centerX - windowHeight * 0.01, bottom, 0)
     ]);
-    const dashedMaterial = new THREE.LineDashedMaterial({color: '#000000', dashSize:Math.max(windowWidth,windowHeight)*0.01, gapSize:Math.max(windowWidth,windowHeight)*0.007});
+    const dashedMaterial = new THREE.LineDashedMaterial({ color: '#000000', dashSize: Math.max(windowWidth, windowHeight) * 0.01, gapSize: Math.max(windowWidth, windowHeight) * 0.007 });
 
-    scene.add(new THREE.LineSegments(dashedGeometry,dashedMaterial).computeLineDistances());
+    scene.add(new THREE.LineSegments(dashedGeometry, dashedMaterial).computeLineDistances());
 
-    const dimOffset = Math.max(windowWidth,windowHeight)*0.08;
+    const dimOffset = Math.max(windowWidth, windowHeight) * 0.08;
     const tickSize = dimOffset * 0.4;
 
-    const dimY = bottom-dimOffset;
+    const dimY = bottom - dimOffset;
     const bottomDimPoints = [
-        new THREE.Vector3(left,dimY,0), new THREE.Vector3(right,dimY,0),
-        new THREE.Vector3(left,dimY-tickSize,0), new THREE.Vector3(left,dimY+tickSize,0),
-        new THREE.Vector3(right,dimY-tickSize,0), new THREE.Vector3(right,dimY+tickSize,0)
+        new THREE.Vector3(left, dimY, 0), new THREE.Vector3(centerX-dimOffset, dimY, 0),
+        new THREE.Vector3(centerX+dimOffset, dimY, 0), new THREE.Vector3(right, dimY, 0),
+        new THREE.Vector3(left, dimY - tickSize, 0), new THREE.Vector3(left, dimY + tickSize, 0),
+        new THREE.Vector3(right, dimY - tickSize, 0), new THREE.Vector3(right, dimY + tickSize, 0)
     ];
-    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(bottomDimPoints),new THREE.LineBasicMaterial({color:'#000000'})));
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(bottomDimPoints), new THREE.LineBasicMaterial({ color: '#000000' })));
 
-    const dimX = right+dimOffset;
+    const dimX = right + dimOffset;
     const rightDimPoints = [
-        new THREE.Vector3(dimX,top,0), new THREE.Vector3(dimX,bottom,0),
-        new THREE.Vector3(dimX+tickSize,top,0), new THREE.Vector3(dimX-tickSize,top,0),
-        new THREE.Vector3(dimX-tickSize,bottom,0), new THREE.Vector3(dimX+tickSize,bottom,0)
+        new THREE.Vector3(dimX, top, 0), new THREE.Vector3(dimX, centerY+dimOffset, 0),
+        new THREE.Vector3(dimX, centerY-dimOffset, 0), new THREE.Vector3(dimX, bottom, 0),
+        new THREE.Vector3(dimX + tickSize, top, 0), new THREE.Vector3(dimX - tickSize, top, 0),
+        new THREE.Vector3(dimX - tickSize, bottom, 0), new THREE.Vector3(dimX + tickSize, bottom, 0)
     ];
-    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(rightDimPoints),new THREE.LineBasicMaterial({color:'#000000'})));
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(rightDimPoints), new THREE.LineBasicMaterial({ color: '#000000' })));
 
-    const plusSize = Math.min(windowWidth,windowHeight)*0.05;
+    const plusSize = Math.min(windowWidth, windowHeight) * 0.05;
     const plusPoints = [
-        new THREE.Vector3(centerX,centerY-plusSize,0), new THREE.Vector3(centerX,centerY+plusSize,0),
-        new THREE.Vector3(centerX-plusSize,centerY,0), new THREE.Vector3(centerX+plusSize,centerY,0)
+        new THREE.Vector3(centerX, centerY - plusSize, 0), new THREE.Vector3(centerX, centerY + plusSize, 0),
+        new THREE.Vector3(centerX - plusSize, centerY, 0), new THREE.Vector3(centerX + plusSize, centerY, 0)
     ];
-    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(plusPoints),new THREE.LineBasicMaterial({color:'#000000'})));
+    scene.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(plusPoints), new THREE.LineBasicMaterial({ color: '#000000' })));
 }
-addWindow(windowWidth,windowHeight);
+addWindow(windowWidth, windowHeight);
+
+// const ttfLoader = new TTFLoader();
+const loader = new FontLoader();
+const font = await loader.loadAsync('./src/fonts/helvetiker_regular.typeface.json');
+
+function addText(text, x, y, size = height * 0.012, color = '#000000') {
+
+    const geometry = new TextGeometry(text, {
+        font: font,
+        size: size,
+        depth: 0,
+        curveSegments: 12
+    });
+
+    const material = new THREE.MeshBasicMaterial({ color: color });
+    const mesh = new THREE.Mesh(geometry, material);
+    mesh.position.set(x, y, 0);
+    scene.add(mesh);
+}
+
+addText(
+    'Design Name:-',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.02,
+);
+addText(
+    'Org name:-',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.12,
+);
+addText(
+    'Project Id:-',
+    width - panelWidth + panelWidth * 0.52,
+    height - height * 0.12,
+);
+addText(
+    'Lorem ipsum...',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.22,
+    undefined,
+    '#636262'
+);
+addText(
+    'Design Details:-',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.32,
+);
+addText(
+    'Date:-',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.52,
+);
+addText(
+    'Developer\nName:-',
+    width - panelWidth + panelWidth * 0.77,
+    height - height * 0.62,
+);
+addText(
+    'Hardware details:-',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.62,
+);
+addText(
+    'Design dimensions:-',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.77,
+);
+addText(
+    'Scale factor:-',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.845,
+);
+addText(
+    'Signature:-',
+    width - panelWidth + panelWidth * 0.02,
+    height - height * 0.92,
+);
+addText(
+    'Ashutosh Dash',
+    pdBoxW - pdBoxW / 1.55,
+    height - pdBoxH * 0.2,
+);
+addText(
+    'EvA/304',
+    pdBoxW - pdBoxW / 1.75,
+    height - pdBoxH * 0.4,
+);
+addText(
+    'Configurator Developer',
+    pdBoxW - pdBoxW / 1.35,
+    height - pdBoxH * 0.65,
+);
+addText(
+    `${windowWidth}`,
+    centerX-dimOffset/2,
+    dimY-dimOffset*0.12
+);
+addText(
+    `${windowHeight}`,
+    dimX-dimOffset*0.5,
+    centerY-dimOffset/5
+);
+
 
 window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
@@ -458,5 +592,6 @@ window.addEventListener('resize', () => {
 function animate() {
     requestAnimationFrame(animate);
     renderer.render(scene, camera);
+    controls.update();
 }
 animate();
